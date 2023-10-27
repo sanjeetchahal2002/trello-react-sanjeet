@@ -19,7 +19,7 @@ const style = {
     p: 4,
   };
 function CheckListModal(props) {
-    let {openCheckList,listData,setOpenCheckList,name,setListData,cardId} = props
+    let {openCheckList,listData,dispatch,name,setOpenCheckList,cardId} = props
     const [newCheckListName,setNewCheckListName] = useState('')
     const handleClose = () =>{ 
         setOpenCheckList((prev) =>{
@@ -28,16 +28,18 @@ function CheckListModal(props) {
     function addCheckList(id){
             axios.post(`https://api.trello.com/1/cards/${id}/checklists?key=${apiKey}&token=${token}&name=${newCheckListName}`)
             .then((res) => {
-                setListData((prev) => {
-                    return [...prev,res.data]
-                })
+                // setListData((prev) => {
+                //     return [...prev,res.data]
+                // })
+                dispatch({type:'add',payload:res.data})
             })
     }    
     function deleteCheckList(id){
             axios.delete(`https://api.trello.com/1/checklists/${id}?key=${apiKey}&token=${token}`)
             .then(() => {
                 let newList = listData.filter((ele) => ele.id !== id)
-                setListData(newList)
+                // setListData(newList)
+                dispatch({type:'delete',payload:newList})
             })
     }
     return (  <>
