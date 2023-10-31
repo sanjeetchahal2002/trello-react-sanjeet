@@ -34,7 +34,7 @@ function CheckListItems(props) {
   const [listItems, dispatch] = useReducer(reducer, []);
   const [newItemName, setNewItemName] = useState("");
   const [error, setError] = useState(false);
-  let { id } = props.ele;
+  let { id} = props.ele;
   let listId = id;
   let cardId = props.cardId;
   function checked(items) {
