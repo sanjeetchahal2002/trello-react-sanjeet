@@ -9,7 +9,7 @@ function Navbar() {
     >
       <Toolbar sx={{ display: "flex", justifyContent: "center" }}>
         <MenuIcon sx={{ position: "absolute", left: "1%" }} />
-        <img src="../../public/trello-official.svg" width="80px" />
+        <img src="https://trello.com/assets/87e1af770a49ce8e84e3.gif" width="80px" />
       </Toolbar>
     </AppBar>
   );
