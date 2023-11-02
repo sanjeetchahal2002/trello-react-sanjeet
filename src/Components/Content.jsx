@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { boardActions } from "./Store/boardSlice";
 import {
   Typography,
   Box,
@@ -19,28 +21,28 @@ const apiKey = import.meta.env.VITE_API_KEY;
 const token = import.meta.env.VITE_TOKEN;
 
 function Content() {
-  const [cards, setCards] = useState([]);
   const [newCardName, setNewCardName] = useState("");
   const [open, setOpen] = useState(false);
-  const [loader, setLoader] = useState(true);
-  const [error, setError] = useState(false);
 
+  const dispatch = useDispatch()
+  const state = useSelector((state) => state.board)
   const handleOpen = () => setOpen(true);
 
   useEffect(() => {
     getBoards()
       .then((res) => {
-        setCards(res.data);
-        setLoader(false);
+        dispatch(boardActions.getBoards(res.data))
       })
-      .catch((error) => setError(true));
+      .catch((error) => {
+        dispatch(boardActions.error(true))
+      });
   }, []);
 
   return (
     <>
-      {loader ? (
+      {state.loading ? (
         <Loader />
-      ) : error ? (
+      ) : state.error ? (
         <ErrorHandle msg={"Error in Boards"} />
       ) : (
         <Box
@@ -51,7 +53,7 @@ function Content() {
           justifyContent="space-evenly"
           p={3}
         >
-          {cards.map(({ id, name, prefs }) => {
+          {state.boards.map(({ id, name, prefs }) => {
             const cardLinkStyle = {
               textDecoration: "none",
             };
@@ -95,7 +97,6 @@ function Content() {
               newCardName={newCardName}
               setNewCardName={setNewCardName}
               open={open}
-              setCards={setCards}
               buttonName="Board"
               url={`https://api.trello.com/1/boards/?name=${newCardName}&key=${apiKey}&token=${token}`}
             />
@@ -105,5 +106,4 @@ function Content() {
     </>
   );
 }
-
 export default Content;

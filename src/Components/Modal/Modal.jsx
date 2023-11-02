@@ -1,5 +1,9 @@
 import { Box, Modal, Input, Button } from "@mui/material";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { boardActions } from "../Store/boardSlice";
+import { listActions } from "../Store/listSlice";
+import {cardActions} from '../Store/cardSlice'
 
 const style = {
   position: "absolute",
@@ -19,12 +23,12 @@ function ModalBox(props) {
     newCardName,
     setNewCardName,
     open,
-    setCards,
     buttonName,
     setError,
     url,
   } = props;
   const handleClose = () => setOpen(false);
+  const dispatch = useDispatch()
   function updateNewCardName(e) {
     setNewCardName(e.target.value);
   }
@@ -32,19 +36,27 @@ function ModalBox(props) {
     <Modal open={open} onClose={handleClose}>
       <Box sx={style}>
         <Input
-          Value={newCardName}
+          value={newCardName}
           onChange={updateNewCardName}
           placeholder={`Enter ${buttonName} Name`}
         />
         <Button
           onClick={() => {
-            axios.post(`${url}`).then((res) => {
-              setCards((prev) => {
-                return [...prev, res.data];
-              }).catch((error) => {
+            axios
+              .post(`${url}`)
+              .then((res) => {
+                if(buttonName === 'Board'){
+                  dispatch(boardActions.createBoard(res.data))
+                }else if(buttonName === 'List'){
+                  dispatch(listActions.createList(res.data))
+                }else if(buttonName === 'Card'){
+                  dispatch(cardActions.createCard(res.data))
+                }
+                setNewCardName('')
+              })
+              .catch((error) => {
                 setError(true);
               });
-            });
             handleClose();
           }}
         >

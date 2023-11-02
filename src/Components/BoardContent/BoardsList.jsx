@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {listActions} from '../Store/listSlice'
+
 import { Card, Typography, Box, Button } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
@@ -16,32 +19,32 @@ const token = import.meta.env.VITE_TOKEN;
 
 export default function BoardList() {
   const { id } = useParams();
-  const [list, setList] = useState([]);
   const [open, setOpen] = useState(false);
   const [newListName, setNewListName] = useState("");
-  const [error, setError] = useState(false);
   const handleOpen = () => setOpen(true);
 
-  function deleteList(Listid) {
-    deleteLists(Listid)
+  const dispatch = useDispatch()
+  const state = useSelector((state) => state.lists)
+
+  function deleteList(listId) {
+    deleteLists(listId)
       .then(() => {
-        const updateList = list.filter((ele) => ele.id != Listid);
-        setList(updateList);
+        dispatch(listActions.deleteList(listId))
       })
-      .catch((error) => setError(true));
+      .catch((error) => listActions.error(true));
   }
 
   useEffect(() => {
     getList(id)
       .then((res) => {
-        setList(res.data);
+        dispatch(listActions.getList(res.data))
       })
-      .catch((error) => setError(true));
+      .catch((error) => listActions.error(true));
   }, []);
 
   return (
     <Box sx={{ minHeight: "100vh", padding: "1rem" }}>
-      {error ? (
+      {state.error ? (
         <ErrorHandle msg={"Error in Lists"} />
       ) : (
         <>
@@ -57,11 +60,11 @@ export default function BoardList() {
             rowGap={2}
             m={2}
           >
-            {error ? (
+            {state.error  ? (
               <ErrorHandle />
             ) : (
-              list.length >= 0 &&
-              list.map((ele, index) => {
+              state.lists.length >= 0 &&
+              state.lists.map((ele, index) => {
                 return (
                   <Card
                     key={index}
@@ -94,9 +97,7 @@ export default function BoardList() {
                 newCardName={newListName}
                 setNewCardName={setNewListName}
                 open={open}
-                setCards={setList}
                 buttonName={"List"}
-                setError={setError}
                 url={`https://api.trello.com/1/lists?name=${newListName}&idBoard=${id}&key=${apiKey}&token=${token}`}
               />
             </Card>

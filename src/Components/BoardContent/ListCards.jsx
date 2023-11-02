@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Box, Typography, Button } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import  {cardActions} from '../Store/cardSlice'
 
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
@@ -16,17 +18,17 @@ const token = import.meta.env.VITE_TOKEN;
 
 function ListCards(props) {
   let { id } = props;
-  const [cards, setCards] = useState([]);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState(false);
   const [newCardName, setNewCardName] = useState("");
   const handleOpen = () => setOpen(true);
 
+  const dispatch = useDispatch()
+  const {cards} = useSelector((state) => state.cards)
   function deleteCard(id) {
     deleteCards(id)
       .then(() => {
-        let newCardList = cards.filter((ele) => ele.id !== id);
-        setCards(newCardList);
+        dispatch(cardActions.deleteCard(id))
       })
       .catch((error) => setError(true));
   }
@@ -34,7 +36,7 @@ function ListCards(props) {
   useEffect(() => {
     getCards(id)
       .then((res) => {
-        setCards(res.data);
+        dispatch(cardActions.getCards({id : id,data : res.data}))
       })
       .catch((error) => setError(true));
   }, []);
@@ -45,8 +47,8 @@ function ListCards(props) {
     <Box sx={{ borderTop: "1px solid" }}>
       <Typography variant="body1" color={"darkblue"}>
         <>
-          {cards &&
-            cards.map((ele, index) => {
+          {cards[id] &&
+            cards[id].map((ele, index) => {
               return (
                 <Box
                   display={"flex"}
@@ -72,8 +74,8 @@ function ListCards(props) {
         newCardName={newCardName}
         setNewCardName={setNewCardName}
         open={open}
-        setCards={setCards}
         buttonName={"Card"}
+        setError = {setError}
         url={`https://api.trello.com/1/cards?idList=${id}&key=${apiKey}&token=${token}&name=${newCardName}`}
       />
     </Box>

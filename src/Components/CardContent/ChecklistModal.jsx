@@ -1,4 +1,8 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import  {checkListActions} from '../Store/checkListSlice'
+import getCheckList from "../ApiCalls/getCheckList";
+
 import {
   Box,
   Modal,
@@ -12,6 +16,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import CheckListItems from "../ChecklistItems/ChecklistItems";
 import Snackbars from "../Error/ErrorPopUp";
+
 import addCheckLists from "../ApiCalls/addCheckList.js";
 import deleteCheckLists from "../ApiCalls/deleteCheckList";
 
@@ -27,29 +32,37 @@ const style = {
   p: 4,
 };
 function CheckListModal(props) {
-  let { openCheckList, listData, dispatch, name, setOpenCheckList, cardId } =
+  let { openCheckList, name, setOpenCheckList, cardId } =
     props;
   const [newCheckListName, setNewCheckListName] = useState("");
+  const dispatch = useDispatch()
+  const state = useSelector((state) => state.checkList) 
   const [error, setError] = useState(false);
   const handleClose = () => {
     setOpenCheckList((prev) => {
       return false;
     });
   };
+  
   function addCheckList(id) {
     addCheckLists(id, newCheckListName)
-      .then((res) => {
-        dispatch({ type: "add", payload: res.data });
-      })
+      .then( res => dispatch(checkListActions.createCheckList(res.data)))
       .catch((error) => setError(true));
   }
+
   function deleteCheckList(id) {
     deleteCheckLists(id)
-      .then(() => {
-        dispatch({ type: "delete", payload: id });
-      })
+      .then(() => dispatch(checkListActions.deleteCheckList(id)))
       .catch((error) => setError(true));
   }
+
+  useEffect(() => {
+    getCheckList(cardId)
+      .then((res) => dispatch(checkListActions.getCheckList(res.data)))
+      .catch((error) => setError(true));
+  }, [openCheckList])
+
+
   return error ? (
     <Snackbars msg={"Error in CheckList"} />
   ) : (
@@ -59,7 +72,7 @@ function CheckListModal(props) {
           <Box>
             {name.toUpperCase()}
             <List>
-              {listData.map((ele, index) => {
+              {state.checkList.map((ele, index) => {
                 return (
                   <ListItemText key={index}>
                     <Card sx={{ padding: "1rem", marginBottom: "1rem" }}>

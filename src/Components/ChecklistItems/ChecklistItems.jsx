@@ -1,5 +1,8 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Button, Typography, Input } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { checkListItemsActions } from "../Store/checkListItemSlice";
+
 import ClearIcon from "@mui/icons-material/Clear";
 import AddIcon from "@mui/icons-material/Add";
 import Checkbox from "@mui/material/Checkbox";
@@ -11,38 +14,22 @@ import addCheckListItems from "../ApiCalls/addCheckListItem";
 import deleteCheckListItems from "../ApiCalls/deleteCheckListItems";
 import getCheckListItems from "../ApiCalls/getCheckListItems";
 
-const reducer = (listItems, action) => {
-  switch (action.type) {
-    case "addNew":
-      return [...action.payload];
-    case "additem":
-      return [...listItems, action.payload];
-    case "deleteitem":
-      let updateList = listItems.filter((ele) => ele.id !== action.payload);
-      return updateList;
-    case "update":
-      return listItems.map((ele) => {
-        if (ele.id === action.payload.id) {
-          ele.state = action.payload.state;
-        }
-        return ele;
-      });
-  }
-};
 
 function CheckListItems(props) {
-  const [listItems, dispatch] = useReducer(reducer, []);
   const [newItemName, setNewItemName] = useState("");
   const [error, setError] = useState(false);
   let { id } = props.ele;
   let listId = id;
   let cardId = props.cardId;
+  const dispatch = useDispatch();
+  const state = useSelector((state) => state.checkListItem);
+
   function checked(items) {
     let { e, itemId } = items;
     let state = e.target.checked ? "complete" : "incomplete";
     updateCheckListItems(cardId, itemId, state)
       .then((res) => {
-        dispatch({ type: "update", payload: res.data });
+        dispatch(checkListItemsActions.updateCheckListItem({id : id, data:res.data}))
       })
       .catch((error) => setError(true));
   }
@@ -50,7 +37,7 @@ function CheckListItems(props) {
     if (newItemName !== "") {
       addCheckListItems(listId, newItemName)
         .then((res) => {
-          dispatch({ type: "additem", payload: res.data });
+          dispatch(checkListItemsActions.createCheckListItem({id : id, data:res.data}));
           setNewItemName("");
         })
         .catch((error) => setError(true));
@@ -59,14 +46,16 @@ function CheckListItems(props) {
   function deleteitem(id) {
     deleteCheckListItems(listId, id)
       .then(() => {
-        dispatch({ type: "deleteitem", payload: id });
+        dispatch(checkListItemsActions.deleteCheckListItem({ListId:listId ,elementId:id }))
       })
       .catch((error) => setError(true));
   }
   useEffect(() => {
     getCheckListItems(id)
       .then((res) => {
-        dispatch({ type: "addNew", payload: res.data });
+        dispatch(
+          checkListItemsActions.getCheckListItem({ id: id, data: res.data })
+        )
       })
       .catch((error) => setError(true));
   }, []);
@@ -74,8 +63,8 @@ function CheckListItems(props) {
     <Snackbars msg={"Error in CheckList Items"} />
   ) : (
     <Box>
-      <ProgressBar listItems={listItems} />
-      {listItems.map((ele) => {
+      <ProgressBar listItems={state.checkListItem[id]} />
+      {state.checkListItem[id] && state.checkListItem[id].map((ele) => {
         return (
           <Box key={ele.id} display={"flex"} alignItems={"center"}>
             <Checkbox onChange={(e) => checked({ e: e, itemId: ele.id })} />

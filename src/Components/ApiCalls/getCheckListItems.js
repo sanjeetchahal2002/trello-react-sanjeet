@@ -2,7 +2,7 @@ import axios from "axios";
 const apiKey = import.meta.env.VITE_API_KEY;
 const token = import.meta.env.VITE_TOKEN;
 
-export default async function getBoards(id) {
+export default async function getCheckListItems(id) {
   const response = await axios.get(
     `https://api.trello.com/1/checklists/${id}/checkItems?key=${apiKey}&token=${token}`
   );

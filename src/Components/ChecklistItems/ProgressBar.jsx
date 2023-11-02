@@ -24,17 +24,15 @@ LinearProgressWithLabel.propTypes = {
 };
 
 export default function LinearWithValueLabel({ listItems }) {
-  const completedItems = listItems.filter((item) => item.state === "complete");
+  const completedItems = listItems && listItems.filter((item) => item.state === "complete") 
   const [progress, setProgress] = useState(0);
-
   useEffect(() => {
-    if (completedItems.length === 0) {
-      setProgress(0);
-    } else {
+    if (completedItems && completedItems.length > 0) {
       setProgress((completedItems.length / listItems.length) * 100);
+    }else{
+      setProgress(0);
     }
   }, [completedItems, listItems]);
-
   return (
     <Box sx={{ width: "100%" }}>
       <LinearProgressWithLabel value={progress} />
